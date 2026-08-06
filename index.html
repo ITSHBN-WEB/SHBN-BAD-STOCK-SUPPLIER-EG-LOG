@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHBN - Bad Stock Supplier/EG Log</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">BS</div>
+    <div class="brand-text">
+      <h1>SHBN - Bad Stock Supplier/EG Log</h1>
+      <p>SUPPLIER RETURNS &middot; EXPIRED GOODS</p>
+    </div>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="new">New Entry</button>
+    <button class="tab" data-tab="it">IT Entry</button>
+    <button class="tab" data-tab="admin">Admin</button>
+  </nav>
+</header>
+
+<main id="app">
+
+  <!-- ============================= NEW ENTRY ============================= -->
+  <section class="view active" id="view-new">
+
+    <div class="card" id="new-step1">
+      <div class="card-head"><span class="step">1</span><h2>Start New Entry</h2></div>
+      <div class="field">
+        <label for="staffName">Staff Name</label>
+        <input type="text" id="staffName" placeholder="Enter staff name">
+      </div>
+      <div class="field">
+        <label for="supervisorName">Supervisor Name</label>
+        <input type="text" id="supervisorName" placeholder="Enter supervisor name">
+      </div>
+      <div class="field">
+        <label for="badStockCategory">Bad Stock Category</label>
+        <select id="badStockCategory">
+          <option value="">Select category...</option>
+          <option value="Bad Stock Harrisons">Bad Stock Harrisons</option>
+          <option value="Bad Stock Supplier">Bad Stock Supplier</option>
+          <option value="Bad Stock EG">Bad Stock EG</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-block" id="btnContinueStep1">Continue</button>
+    </div>
+
+    <div class="card" id="new-step2" hidden>
+      <div class="card-head">
+        <span class="step">2</span><h2>Scan &amp; Add Items</h2>
+        <button class="btn-link" id="btnEditHeader">Edit staff/category</button>
+      </div>
+      <div class="summary-row">
+        <span id="summaryStaff"></span> &middot; <span id="summaryCategory"></span>
+      </div>
+
+      <div class="field scan-row">
+        <label for="scanCode">Scan / Enter Product Code</label>
+        <div class="scan-input">
+          <input type="text" id="scanCode" placeholder="Scan barcode or enter Material / EAN-UPC" autocomplete="off">
+          <button class="btn btn-secondary" id="btnSearch">Search</button>
+        </div>
+      </div>
+
+      <div class="product-result" id="productResult" hidden>
+        <div class="pr-grid">
+          <div><span class="pr-label">Description</span><span class="pr-value" id="prDescription">-</span></div>
+          <div><span class="pr-label">Sales Unit</span><span class="pr-value" id="prSalesUnit">-</span></div>
+          <div><span class="pr-label">Numerator</span><span class="pr-value" id="prNumerator">-</span></div>
+          <div><span class="pr-label">Department</span><span class="pr-value" id="prDepartment">-</span></div>
+        </div>
+        <div class="pr-form">
+          <div class="field">
+            <label for="qtyInput">Quantity</label>
+            <input type="number" id="qtyInput" min="1" max="999" placeholder="Qty">
+          </div>
+          <div class="field">
+            <label for="reasonInput">Reason</label>
+            <select id="reasonInput">
+              <option value="">Select reason...</option>
+              <option value="Damaged">Damaged</option>
+              <option value="Expired">Expired</option>
+              <option value="Buy 1 Free 1">Buy 1 Free 1</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="btnInsertItem">Insert</button>
+        </div>
+      </div>
+      <p class="hint" id="searchHint"></p>
+
+      <table class="cart-table" id="cartTable">
+        <thead>
+          <tr>
+            <th>Material</th><th>Description</th><th>Qty</th><th>Unit</th><th>Reason</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="cartBody"></tbody>
+      </table>
+      <p class="empty-note" id="cartEmptyNote">No items added yet.</p>
+
+      <div class="action-row">
+        <button class="btn btn-secondary" id="btnPrintCart">Print</button>
+        <button class="btn btn-primary" id="btnSubmitCart">Submit</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============================== IT ENTRY ============================== -->
+  <section class="view" id="view-it">
+    <div class="subtabs">
+      <button class="subtab active" data-subtab="pending">Pending</button>
+      <button class="subtab" data-subtab="completed">Completed</button>
+    </div>
+
+    <div class="it-list" id="pendingList"></div>
+    <div class="it-list" id="completedList" hidden></div>
+
+    <!-- Transaction detail panel -->
+    <div class="card txn-panel" id="txnPanel" hidden>
+      <div class="card-head">
+        <h2>Transaction <span id="txnPanelId"></span></h2>
+        <button class="btn-link" id="btnCloseTxn">Close</button>
+      </div>
+      <div class="summary-row" id="txnPanelSummary"></div>
+
+      <table class="cart-table" id="txnTable">
+        <thead>
+          <tr><th>Material</th><th>Description</th><th>Qty</th><th>Unit</th><th>Reason</th><th id="txnRowActionHead"></th></tr>
+        </thead>
+        <tbody id="txnBody"></tbody>
+      </table>
+
+      <div class="keyin-block" id="keyinBlock">
+        <div class="field">
+          <label for="materialDocInput">Material Document</label>
+          <input type="text" id="materialDocInput" placeholder="Enter material document number">
+        </div>
+        <div class="field">
+          <label for="keyInByInput">Key in by</label>
+          <input type="text" id="keyInByInput" placeholder="Enter your name">
+        </div>
+        <button class="btn btn-primary" id="btnSubmitKeyIn">Submit</button>
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-danger" id="btnDeleteTxn">Delete Whole Transaction</button>
+        <button class="btn btn-secondary" id="btnPrintTxn">Print</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================ ADMIN ================================ -->
+  <section class="view" id="view-admin">
+
+    <div class="card" id="adminLock">
+      <div class="card-head"><h2>Admin Access</h2></div>
+      <div class="field">
+        <label for="adminPassword">Password</label>
+        <input type="password" id="adminPassword" placeholder="Enter admin password" maxlength="4">
+      </div>
+      <button class="btn btn-primary btn-block" id="btnUnlockAdmin">Unlock</button>
+      <p class="hint" id="adminLockHint"></p>
+    </div>
+
+    <div id="adminPanel" hidden>
+      <div class="card">
+        <div class="card-head"><h2>Upload Masterlist (Excel)</h2></div>
+        <div class="field">
+          <label for="deptInput">Department</label>
+          <input type="text" id="deptInput" placeholder="Enter department name">
+        </div>
+        <div class="field">
+          <label for="fileInput">Excel file (.xlsx)</label>
+          <input type="file" id="fileInput" accept=".xlsx">
+        </div>
+        <p class="hint">Only the Material, Material Description, Sales Unit, Numerator and EAN/UPC columns are read. Department is applied to every row from the field above.</p>
+        <button class="btn btn-primary" id="btnUploadMasterlist">Upload</button>
+        <p class="hint" id="uploadHint"></p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Add New Single Data</h2>
+          <button class="btn-link" id="btnToggleSingleForm">Add New Single Data</button>
+        </div>
+        <div id="singleForm" hidden>
+          <div class="field"><label>Material</label><input type="text" id="singleMaterial"></div>
+          <div class="field"><label>Material Description</label><input type="text" id="singleDescription"></div>
+          <div class="field"><label>Sales Unit</label><input type="text" id="singleSalesUnit"></div>
+          <div class="field"><label>Numerator</label><input type="number" id="singleNumerator"></div>
+          <div class="field"><label>EAN/UPC</label><input type="text" id="singleEanUpc"></div>
+          <div class="field"><label>Department</label><input type="text" id="singleDepartment"></div>
+          <button class="btn btn-primary" id="btnAddSingle">Add Data</button>
+          <p class="hint" id="singleHint"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Confirm dialog -->
+<div class="modal-overlay" id="confirmOverlay" hidden>
+  <div class="modal">
+    <p id="confirmMessage">Are you sure?</p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="confirmCancel">Cancel</button>
+      <button class="btn btn-danger" id="confirmOk">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast" hidden></div>
+
+<!-- Print area (hidden on screen, shown via window.print) -->
+<div id="printArea"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
