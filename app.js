@@ -89,14 +89,13 @@ let cart = []; // { material, description, eanUpc, numerator, salesUnit, quantit
 let headerInfo = { staffSupervisor: '', badStockCategory: '' };
 
 document.getElementById('btnContinueStep1').addEventListener('click', function () {
-  const staff = document.getElementById('staffName').value.trim();
-  const supervisor = document.getElementById('supervisorName').value.trim();
+  const staffSupervisor = document.getElementById('staffSupervisorName').value.trim();
   const category = document.getElementById('badStockCategory').value;
-  if (!staff || !supervisor || !category) {
-    toast('Please fill in staff name, supervisor name and bad stock category.', 'error');
+  if (!staffSupervisor || !category) {
+    toast('Please fill in staff / supervisor name and bad stock category.', 'error');
     return;
   }
-  headerInfo.staffSupervisor = staff + ' / ' + supervisor;
+  headerInfo.staffSupervisor = staffSupervisor;
   headerInfo.badStockCategory = category;
   document.getElementById('summaryStaff').textContent = headerInfo.staffSupervisor;
   document.getElementById('summaryCategory').textContent = headerInfo.badStockCategory;
@@ -235,8 +234,7 @@ document.getElementById('btnSubmitCart').addEventListener('click', async functio
 function resetNewEntry() {
   cart = [];
   headerInfo = { staffSupervisor: '', badStockCategory: '' };
-  document.getElementById('staffName').value = '';
-  document.getElementById('supervisorName').value = '';
+  document.getElementById('staffSupervisorName').value = '';
   document.getElementById('badStockCategory').value = '';
   document.getElementById('productResult').hidden = true;
   document.getElementById('searchHint').textContent = '';
@@ -328,18 +326,21 @@ function renderItList(containerId, items, isCompleted) {
 
 let activeTxn = null;
 let activeTxnCompleted = false;
+let txnPendingChanges = {}; // { rowIndex: newQty }
 
 async function openTxnPanel(txnId, isCompleted) {
   try {
     const data = await apiGet('getTransaction', { txnId: txnId });
     activeTxn = data;
     activeTxnCompleted = isCompleted;
+    txnPendingChanges = {};
     document.getElementById('txnPanel').hidden = false;
     document.getElementById('txnPanelId').textContent = data.txnId;
     const first = data.entries[0];
     document.getElementById('txnPanelSummary').textContent =
       first.staffSupervisor + ' \u00b7 ' + first.badStockCategory + ' \u00b7 ' + first.date;
     renderTxnTable();
+    updateSaveRow();
     document.getElementById('keyinBlock').hidden = isCompleted;
     document.getElementById('btnDeleteTxn').hidden = isCompleted;
     document.getElementById('materialDocInput').value = '';
@@ -348,6 +349,11 @@ async function openTxnPanel(txnId, isCompleted) {
   } catch (err) {
     toast(err.message, 'error');
   }
+}
+
+function updateSaveRow() {
+  const hasChanges = !activeTxnCompleted && Object.keys(txnPendingChanges).length > 0;
+  document.getElementById('txnSaveRow').hidden = !hasChanges;
 }
 
 function renderTxnTable() {
@@ -372,20 +378,36 @@ function renderTxnTable() {
   });
 }
 
-document.getElementById('txnBody').addEventListener('change', async function (e) {
+document.getElementById('txnBody').addEventListener('input', function (e) {
   if (!e.target.classList.contains('txnQtyInput')) return;
   const rowIndex = Number(e.target.dataset.row);
   let val = Number(e.target.value);
-  if (!val || val <= 0) val = 1;
-  if (val > 999) { val = 999; toast('Quantity cannot exceed 999.', 'error'); }
-  e.target.value = val;
+  if (val > 999) { val = 999; e.target.value = val; toast('Quantity cannot exceed 999.', 'error'); }
+  const original = activeTxn.entries.find(function (en) { return en.rowIndex === rowIndex; }).quantity;
+  if (val && val > 0 && val !== original) {
+    txnPendingChanges[rowIndex] = val;
+  } else {
+    delete txnPendingChanges[rowIndex];
+  }
+  updateSaveRow();
+});
+
+document.getElementById('btnSaveTxnChanges').addEventListener('click', async function () {
+  const entries = Object.keys(txnPendingChanges);
+  if (!entries.length) return;
+  this.disabled = true;
   try {
-    await apiPost('updateEntryQty', { txnId: activeTxn.txnId, rowIndex: rowIndex, quantity: val });
-    toast('Quantity updated.', 'success');
+    for (const rowIndex of entries) {
+      await apiPost('updateEntryQty', { txnId: activeTxn.txnId, rowIndex: Number(rowIndex), quantity: txnPendingChanges[rowIndex] });
+    }
+    toast('Changes saved.', 'success');
+    txnPendingChanges = {};
     await openTxnPanel(activeTxn.txnId, activeTxnCompleted);
     await refreshItLists();
   } catch (err) {
     toast(err.message, 'error');
+  } finally {
+    this.disabled = false;
   }
 });
 
@@ -418,6 +440,10 @@ document.getElementById('btnDeleteTxn').addEventListener('click', async function
 });
 
 document.getElementById('btnSubmitKeyIn').addEventListener('click', async function () {
+  if (Object.keys(txnPendingChanges).length) {
+    toast('Save your quantity changes first.', 'error');
+    return;
+  }
   const materialDocument = document.getElementById('materialDocInput').value.trim();
   const keyInBy = document.getElementById('keyInByInput').value.trim();
   if (!materialDocument || !keyInBy) { toast('Fill in Material Document and Key in by.', 'error'); return; }
@@ -434,9 +460,16 @@ document.getElementById('btnSubmitKeyIn').addEventListener('click', async functi
   }
 });
 
-document.getElementById('btnCloseTxn').addEventListener('click', closeTxnPanel);
+document.getElementById('btnCloseTxn').addEventListener('click', async function () {
+  if (Object.keys(txnPendingChanges).length) {
+    const ok = await confirmDialog('You have unsaved quantity changes. Discard them?');
+    if (!ok) return;
+  }
+  closeTxnPanel();
+});
 function closeTxnPanel() {
   activeTxn = null;
+  txnPendingChanges = {};
   document.getElementById('txnPanel').hidden = true;
 }
 
@@ -467,6 +500,8 @@ function renderPrintArea(t) {
       '<td>' + en.quantity + '</td><td>' + escapeHtml(en.salesUnit) + '</td><td>' + escapeHtml(en.reason) + '</td></tr>';
   }).join('');
 
+  const blank = '__________________';
+
   document.getElementById('printArea').innerHTML =
     '<div class="print-title">SHBN - BAD STOCK SUPPLIER/EG LOG</div>' +
     '<div class="print-outlet">OUTLET: ' + OUTLET_NAME + '</div>' +
@@ -477,11 +512,13 @@ function renderPrintArea(t) {
     '</div>' +
     '<table class="print-table"><thead><tr><th>Material</th><th>Description</th><th>Qty</th><th>Unit</th><th>Reason</th></tr></thead>' +
     '<tbody>' + rows + '</tbody></table>' +
-    '<div class="print-footer">' +
-    '<div><strong>Material Doc:</strong> ' + escapeHtml(t.materialDocument) + '</div>' +
-    '<div><strong>Key in by:</strong> ' + escapeHtml(t.keyInBy) + '&nbsp;&nbsp;&nbsp;<strong>Date:</strong> ' + escapeHtml(t.keyInDate) + '</div>' +
-    '</div>' +
-    '<div class="print-sign"><span>Staff</span><span>Supervisor</span></div>';
+    '<div class="print-sign"><span>Staff / Supervisor</span><span>Manager</span></div>' +
+    '<div class="print-itonly">FOR IT USE ONLY</div>' +
+    '<div class="print-fields">' +
+    '<div><span class="pf-label">Material document</span><span>: ' + (t.materialDocument ? escapeHtml(t.materialDocument) : blank) + '</span></div>' +
+    '<div><span class="pf-label">Key in by</span><span>: ' + (t.keyInBy ? escapeHtml(t.keyInBy) : blank) + '</span></div>' +
+    '<div><span class="pf-label">Date</span><span>: ' + (t.keyInDate ? escapeHtml(t.keyInDate) : blank) + '</span></div>' +
+    '</div>';
 }
 
 /* =========================================================================
@@ -614,7 +651,7 @@ function escapeHtml(str) {
 // inputs and dropdowns are left alone.
 
 const UPPERCASE_FIELD_IDS = [
-  'staffName', 'supervisorName', 'scanCode',
+  'staffSupervisorName', 'scanCode',
   'materialDocInput', 'keyInByInput',
   'deptInput',
   'singleMaterial', 'singleDescription', 'singleSalesUnit', 'singleEanUpc', 'singleDepartment'
