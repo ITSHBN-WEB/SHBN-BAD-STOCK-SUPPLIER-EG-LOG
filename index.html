@@ -31,12 +31,8 @@
     <div class="card" id="new-step1">
       <div class="card-head"><span class="step">1</span><h2>Start New Entry</h2></div>
       <div class="field">
-        <label for="staffName">Staff Name</label>
-        <input type="text" id="staffName" placeholder="Enter staff name">
-      </div>
-      <div class="field">
-        <label for="supervisorName">Supervisor Name</label>
-        <input type="text" id="supervisorName" placeholder="Enter supervisor name">
+        <label for="staffSupervisorName">Staff / Supervisor Name</label>
+        <input type="text" id="staffSupervisorName" placeholder="Enter staff / supervisor name">
       </div>
       <div class="field">
         <label for="badStockCategory">Bad Stock Category</label>
@@ -136,6 +132,10 @@
         </thead>
         <tbody id="txnBody"></tbody>
       </table>
+
+      <div class="action-row" id="txnSaveRow" hidden>
+        <button class="btn btn-primary btn-block" id="btnSaveTxnChanges">Save Changes</button>
+      </div>
 
       <div class="keyin-block" id="keyinBlock">
         <div class="field">
