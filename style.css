@@ -188,10 +188,15 @@ main{max-width:720px;margin:0 auto;padding:20px;padding-bottom:64px;}
   .print-meta{display:flex;justify-content:space-between;font-size:13px;margin-bottom:14px;}
   .print-table{width:100%;border-collapse:collapse;font-size:12px;}
   .print-table th,.print-table td{border:1px solid #999;padding:6px 8px;text-align:left;}
-  .print-footer{margin-top:24px;font-size:12px;}
-  .print-footer div{margin-bottom:6px;}
   .print-sign{display:flex;justify-content:space-between;margin-top:50px;font-size:12px;}
   .print-sign span{display:inline-block;min-width:180px;border-top:1px solid #333;padding-top:4px;text-align:center;}
+  .print-itonly{
+    display:flex;align-items:center;gap:14px;margin:34px 0 16px;
+    font-weight:700;font-size:12px;letter-spacing:.08em;text-align:center;
+  }
+  .print-itonly::before,.print-itonly::after{content:'';flex:1;border-top:3px double #333;}
+  .print-fields div{display:flex;margin-bottom:8px;font-size:12px;}
+  .print-fields .pf-label{width:150px;flex:none;font-weight:700;}
 }
 
 @media (max-width:480px){
