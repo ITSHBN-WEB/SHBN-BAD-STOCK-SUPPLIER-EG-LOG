@@ -187,6 +187,7 @@ function renderCart() {
     const tr = document.createElement('tr');
     tr.innerHTML =
       '<td>' + escapeHtml(it.material) + '</td>' +
+      '<td>' + escapeHtml(it.eanUpc) + '</td>' +
       '<td>' + escapeHtml(it.description) + '</td>' +
       '<td><input type="number" min="1" max="999" value="' + it.quantity + '" data-idx="' + idx + '" class="cartQtyInput"></td>' +
       '<td>' + escapeHtml(it.salesUnit) + '</td>' +
@@ -243,33 +244,7 @@ function resetNewEntry() {
   document.getElementById('new-step1').hidden = false;
 }
 
-document.getElementById('btnPrintCart').addEventListener('click', function () {
-  if (!cart.length) { toast('Nothing to print yet.', 'error'); return; }
-  renderPrintArea({
-    staffSupervisor: headerInfo.staffSupervisor,
-    badStockCategory: headerInfo.badStockCategory,
-    date: nowDisplay(),
-    materialDocument: '',
-    keyInBy: '',
-    keyInDate: '',
-    entries: cart.map(function (it) {
-      return { material: it.material, description: it.description, quantity: it.quantity, salesUnit: it.salesUnit, reason: it.reason };
-    })
-  });
-  window.print();
-});
 
-function nowDisplay() {
-  const d = new Date();
-  const dd = String(d.getDate()).padStart(2, '0');
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const yyyy = d.getFullYear();
-  let h = d.getHours();
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  h = h % 12; if (h === 0) h = 12;
-  const min = String(d.getMinutes()).padStart(2, '0');
-  return dd + '.' + mm + '.' + yyyy + ' ' + h + ':' + min + ampm;
-}
 
 /* =========================================================================
    IT ENTRY
@@ -369,6 +344,7 @@ function renderTxnTable() {
       : '<td><button class="icon-btn delete" data-row="' + en.rowIndex + '" title="Remove">&#10005;</button></td>';
     tr.innerHTML =
       '<td>' + escapeHtml(en.material) + '</td>' +
+      '<td>' + escapeHtml(en.eanUpc) + '</td>' +
       '<td>' + escapeHtml(en.description) + '</td>' +
       qtyCell +
       '<td>' + escapeHtml(en.salesUnit) + '</td>' +
@@ -484,7 +460,7 @@ document.getElementById('btnPrintTxn').addEventListener('click', function () {
     keyInBy: first.keyInBy || '',
     keyInDate: first.keyInDate || '',
     entries: activeTxn.entries.map(function (en) {
-      return { material: en.material, description: en.description, quantity: en.quantity, salesUnit: en.salesUnit, reason: en.reason };
+      return { material: en.material, eanUpc: en.eanUpc, description: en.description, quantity: en.quantity, salesUnit: en.salesUnit, reason: en.reason };
     })
   });
   window.print();
@@ -496,7 +472,7 @@ document.getElementById('btnPrintTxn').addEventListener('click', function () {
 
 function renderPrintArea(t) {
   const rows = t.entries.map(function (en) {
-    return '<tr><td>' + escapeHtml(en.material) + '</td><td>' + escapeHtml(en.description) + '</td>' +
+    return '<tr><td>' + escapeHtml(en.material) + '</td><td>' + escapeHtml(en.eanUpc) + '</td><td>' + escapeHtml(en.description) + '</td>' +
       '<td>' + en.quantity + '</td><td>' + escapeHtml(en.salesUnit) + '</td><td>' + escapeHtml(en.reason) + '</td></tr>';
   }).join('');
 
@@ -513,7 +489,7 @@ function renderPrintArea(t) {
     '</div>' +
     '</div>' +
     '<div class="print-body">' +
-    '<table class="print-table"><thead><tr><th>Material</th><th>Description</th><th>Qty</th><th>Unit</th><th>Reason</th></tr></thead>' +
+    '<table class="print-table"><thead><tr><th>Material</th><th>Product Code</th><th>Description</th><th>Qty</th><th>Unit</th><th>Reason</th></tr></thead>' +
     '<tbody>' + rows + '</tbody></table>' +
     '<div class="print-sign"><span>Staff / Supervisor</span><span>Manager</span></div>' +
     '<div class="print-itonly">FOR IT USE ONLY</div>' +
