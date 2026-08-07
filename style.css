@@ -161,6 +161,9 @@ main{max-width:720px;margin:0 auto;padding:20px;padding-bottom:64px;}
   position:fixed;inset:0;background:rgba(43,36,32,.5);
   display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;
 }
+.modal-overlay[hidden]{
+  display:none;
+}
 .modal{background:#fff;border-radius:12px;padding:24px;max-width:340px;width:100%;}
 .modal p{margin:0 0 18px;font-size:15px;}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
