@@ -503,6 +503,7 @@ function renderPrintArea(t) {
   const blank = '__________________';
 
   document.getElementById('printArea').innerHTML =
+    '<div class="print-header">' +
     '<div class="print-title">SHBN - BAD STOCK SUPPLIER/EG LOG</div>' +
     '<div class="print-outlet">OUTLET: ' + OUTLET_NAME + '</div>' +
     '<div class="print-meta">' +
@@ -510,6 +511,8 @@ function renderPrintArea(t) {
     '<span><strong>Category:</strong> ' + escapeHtml(t.badStockCategory) + '</span>' +
     '<span><strong>Staff / Supervisor:</strong> ' + escapeHtml(t.staffSupervisor) + '</span>' +
     '</div>' +
+    '</div>' +
+    '<div class="print-body">' +
     '<table class="print-table"><thead><tr><th>Material</th><th>Description</th><th>Qty</th><th>Unit</th><th>Reason</th></tr></thead>' +
     '<tbody>' + rows + '</tbody></table>' +
     '<div class="print-sign"><span>Staff / Supervisor</span><span>Manager</span></div>' +
@@ -518,6 +521,7 @@ function renderPrintArea(t) {
     '<div><span class="pf-label">Material document</span><span>: ' + (t.materialDocument ? escapeHtml(t.materialDocument) : blank) + '</span></div>' +
     '<div><span class="pf-label">Key in by</span><span>: ' + (t.keyInBy ? escapeHtml(t.keyInBy) : blank) + '</span></div>' +
     '<div><span class="pf-label">Date</span><span>: ' + (t.keyInDate ? escapeHtml(t.keyInDate) : blank) + '</span></div>' +
+    '</div>' +
     '</div>';
 }
 
