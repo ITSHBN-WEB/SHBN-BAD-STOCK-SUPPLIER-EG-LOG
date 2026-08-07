@@ -605,3 +605,31 @@ function escapeHtml(str) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
+
+/* ---------------------------------------------------------------------- */
+/* Auto-uppercase text inputs                                              */
+/* ---------------------------------------------------------------------- */
+// All free-text fields are forced to uppercase as the user types (matches
+// the convention used across the other SHBN tools). Number/password/file
+// inputs and dropdowns are left alone.
+
+const UPPERCASE_FIELD_IDS = [
+  'staffName', 'supervisorName', 'scanCode',
+  'materialDocInput', 'keyInByInput',
+  'deptInput',
+  'singleMaterial', 'singleDescription', 'singleSalesUnit', 'singleEanUpc', 'singleDepartment'
+];
+
+function enableAutoUppercase() {
+  UPPERCASE_FIELD_IDS.forEach(function (id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function () {
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      el.value = el.value.toUpperCase();
+      if (start !== null && end !== null) el.setSelectionRange(start, end);
+    });
+  });
+}
+enableAutoUppercase();
