@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Print Station — SHBN Bad Stock Log</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .ps-wrap{max-width:640px;margin:0 auto;padding:24px 20px 60px;}
+  .ps-status{font-size:13px;color:var(--muted);margin-top:6px;}
+  .ps-status.live{color:var(--success);}
+  .ps-item{display:flex;justify-content:space-between;align-items:center;gap:14px;}
+  .ps-item .ps-main{display:flex;flex-direction:column;gap:2px;}
+  .ps-item .ps-txn{font-weight:700;font-size:13px;color:var(--maroon-dark);}
+  .ps-item .ps-meta{font-size:12px;color:var(--muted);}
+  .ps-item .ps-actions{display:flex;gap:8px;flex:none;}
+  .ps-item .btn{padding:9px 14px;font-size:13px;}
+  .pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);margin-right:6px;}
+</style>
+</head>
+<body>
+
+<div class="ps-wrap">
+  <header class="brand" style="margin-bottom:18px;">
+    <div class="brand-mark">BS</div>
+    <div class="brand-text">
+      <h1>Print Station</h1>
+      <p>SHBN - BAD STOCK SUPPLIER/EG LOG</p>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="card-head"><h2>Keep this tab open</h2></div>
+    <p class="hint">This page checks for new print requests every few seconds. Leave it open on this computer, connected to the printer, for as long as staff might submit prints from their phones.</p>
+    <button class="btn btn-secondary" id="btnEnableNotify">Enable Desktop Notifications</button>
+    <p class="ps-status" id="notifyStatus"></p>
+    <p class="ps-status" id="pollStatus"><span class="pulse"></span>Checking for print requests...</p>
+  </div>
+
+  <div id="queueList"></div>
+</div>
+
+<!-- Print area (hidden on screen, shown via window.print) -->
+<div id="printArea"></div>
+
+<script src="print-station.js"></script>
+</body>
+</html>
