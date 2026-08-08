@@ -4,7 +4,7 @@
    ========================================================================= */
 
 // TODO: paste your deployed Apps Script /exec URL here before publishing.
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRqhGs_op3u7UcfpTu9qSPnRjkTKOvYhZHgpBwFMhekrchT6hALVSwsmkO7G6Z0u4Z/exec';
 const ADMIN_PASSWORD = '8888';
 
 /* ---------------------------------------------------------------------- */
