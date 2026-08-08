@@ -88,7 +88,7 @@ function updateNotifyStatus() {
 updateNotifyStatus();
 
 function contextLabel(item) {
-  if (!item.context) return item.contextError || 'Details unavailable';
+  if (!item.context) return 'Details unavailable';
   const c = item.context;
   if (item.sourceId === 'fresh_market') {
     return [c.staff, c.supervisor, c.category, c.itemCount + ' item(s)'].filter(Boolean).join(' \u00b7 ');
