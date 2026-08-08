@@ -60,9 +60,13 @@ picks up your changes.
   upload a masterlist Excel (only Material, Material Description, Sales
   Unit, Numerator, EAN/UPC are read; Department is applied from the field
   you type), or add/overwrite a single masterlist row by hand.
-- **Print**: IT Entry's Print button no longer prints directly — it sends a
-  request to a **Print Station** (see below). Print requests aren't
-  currently possible from New Entry.
+- **Print**: an open IT Entry transaction now has two buttons:
+  - **Print Here** — prints directly from whatever device you're on, the
+    same as before (useful when you're already at the printer).
+  - **Send to Print Station** — queues the request for someone at the
+    Print Station to print or cancel remotely (see below). This is what
+    makes phone printing possible.
+  New Entry still has no print button.
 
 ## 4. Print Station (remote/phone printing)
 
