@@ -4,9 +4,8 @@
    ========================================================================= */
 
 // TODO: paste your deployed Apps Script /exec URL here before publishing.
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRqhGs_op3u7UcfpTu9qSPnRjkTKOvYhZHgpBwFMhekrchT6hALVSwsmkO7G6Z0u4Z/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
 const ADMIN_PASSWORD = '8888';
-const OUTLET_NAME = 'SEGSHBN';
 
 /* ---------------------------------------------------------------------- */
 /* API helper                                                              */
@@ -449,56 +448,49 @@ function closeTxnPanel() {
   document.getElementById('txnPanel').hidden = true;
 }
 
-document.getElementById('btnPrintTxn').addEventListener('click', function () {
+document.getElementById('btnPrintTxn').addEventListener('click', async function () {
   if (!activeTxn) return;
-  const first = activeTxn.entries[0];
-  renderPrintArea({
-    staffSupervisor: first.staffSupervisor,
-    badStockCategory: first.badStockCategory,
-    date: first.date,
-    materialDocument: first.materialDocument || '',
-    keyInBy: first.keyInBy || '',
-    keyInDate: first.keyInDate || '',
-    entries: activeTxn.entries.map(function (en) {
-      return { material: en.material, eanUpc: en.eanUpc, description: en.description, quantity: en.quantity, salesUnit: en.salesUnit, reason: en.reason };
-    })
-  });
-  window.print();
+  const btn = this;
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  try {
+    const result = await apiPost('requestPrint', { txnId: activeTxn.txnId });
+    toast('Print request sent to the Print Station.', 'success');
+    pollPrintRequest(result.requestId, btn);
+  } catch (err) {
+    toast(err.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Print';
+  }
 });
 
-/* ---------------------------------------------------------------------- */
-/* Print rendering (shared by New Entry + IT Entry)                        */
-/* ---------------------------------------------------------------------- */
-
-function renderPrintArea(t) {
-  const rows = t.entries.map(function (en) {
-    return '<tr><td>' + escapeHtml(en.material) + '</td><td>' + escapeHtml(en.eanUpc) + '</td><td>' + escapeHtml(en.description) + '</td>' +
-      '<td>' + en.quantity + '</td><td>' + escapeHtml(en.salesUnit) + '</td><td>' + escapeHtml(en.reason) + '</td></tr>';
-  }).join('');
-
-  const blank = '__________________';
-
-  document.getElementById('printArea').innerHTML =
-    '<div class="print-header">' +
-    '<div class="print-title">SHBN - BAD STOCK SUPPLIER/EG LOG</div>' +
-    '<div class="print-outlet">OUTLET: ' + OUTLET_NAME + '</div>' +
-    '<div class="print-meta">' +
-    '<span><strong>Date:</strong> ' + escapeHtml(t.date) + '</span>' +
-    '<span><strong>Category:</strong> ' + escapeHtml(t.badStockCategory) + '</span>' +
-    '<span><strong>Staff / Supervisor:</strong> ' + escapeHtml(t.staffSupervisor) + '</span>' +
-    '</div>' +
-    '</div>' +
-    '<div class="print-body">' +
-    '<table class="print-table"><thead><tr><th>Material</th><th>Product Code</th><th>Description</th><th>Qty</th><th>Unit</th><th>Reason</th></tr></thead>' +
-    '<tbody>' + rows + '</tbody></table>' +
-    '<div class="print-sign"><span>Staff / Supervisor</span><span>Manager</span></div>' +
-    '<div class="print-itonly">FOR IT USE ONLY</div>' +
-    '<div class="print-fields">' +
-    '<div><span class="pf-label">Material document</span><span>: ' + (t.materialDocument ? escapeHtml(t.materialDocument) : blank) + '</span></div>' +
-    '<div><span class="pf-label">Key in by</span><span>: ' + (t.keyInBy ? escapeHtml(t.keyInBy) : blank) + '</span></div>' +
-    '<div><span class="pf-label">Date</span><span>: ' + (t.keyInDate ? escapeHtml(t.keyInDate) : blank) + '</span></div>' +
-    '</div>' +
-    '</div>';
+function pollPrintRequest(requestId, btn) {
+  btn.textContent = 'Waiting for Print Station...';
+  let attempts = 0;
+  const maxAttempts = 40; // ~2 minutes at 3s intervals
+  const interval = setInterval(async function () {
+    attempts++;
+    try {
+      const data = await apiGet('getPrintRequestStatus', { requestId: requestId });
+      if (data.status === 'PRINTED') {
+        clearInterval(interval);
+        toast('Printed at the Print Station.', 'success');
+        btn.disabled = false; btn.textContent = 'Print';
+      } else if (data.status === 'CANCELLED') {
+        clearInterval(interval);
+        toast('Print request was cancelled at the Print Station.', 'error');
+        btn.disabled = false; btn.textContent = 'Print';
+      } else if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        toast('Still waiting — make sure the Print Station tab is open.', 'error');
+        btn.disabled = false; btn.textContent = 'Print';
+      }
+    } catch (err) {
+      clearInterval(interval);
+      toast(err.message, 'error');
+      btn.disabled = false; btn.textContent = 'Print';
+    }
+  }, 3000);
 }
 
 /* =========================================================================
