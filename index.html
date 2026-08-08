@@ -151,7 +151,8 @@
 
       <div class="action-row">
         <button class="btn btn-danger" id="btnDeleteTxn">Delete Whole Transaction</button>
-        <button class="btn btn-secondary" id="btnPrintTxn">Print</button>
+        <button class="btn btn-secondary" id="btnPrintHere">Print Here</button>
+        <button class="btn btn-secondary" id="btnPrintTxn">Send to Print Station</button>
       </div>
     </div>
   </section>
@@ -219,6 +220,9 @@
 
 <!-- Toast -->
 <div class="toast" id="toast" hidden></div>
+
+<!-- Print area (hidden on screen, shown via window.print for "Print Here") -->
+<div id="printArea"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="app.js"></script>
