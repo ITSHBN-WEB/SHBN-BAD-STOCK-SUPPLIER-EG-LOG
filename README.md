@@ -28,7 +28,8 @@ picks up your changes.
 
 ## 2. Frontend
 
-1. In `app.js`, replace the placeholder with your real URL:
+1. In `app.js` **and** `print-station.js`, replace the placeholder with your
+   real URL:
    ```js
    const WEB_APP_URL = 'https://script.google.com/macros/s/XXXXXXXX/exec';
    ```
@@ -59,13 +60,43 @@ picks up your changes.
   upload a masterlist Excel (only Material, Material Description, Sales
   Unit, Numerator, EAN/UPC are read; Department is applied from the field
   you type), or add/overwrite a single masterlist row by hand.
-- **Print**: available from both New Entry (before submission — Material
-  Doc / Key in by / Key in date print blank) and from an open IT Entry
-  transaction (prints whatever is currently on the sheet, including the
-  Material Document/Key in info once completed). The layout follows the
-  processing-form reference you sent — title, outlet, date/staff/supervisor
-  line, an itemised table, and a footer with Material Doc / Key in by / Date
-  plus signature lines.
+- **Print**: IT Entry's Print button no longer prints directly — it sends a
+  request to a **Print Station** (see below). Print requests aren't
+  currently possible from New Entry.
+
+## 4. Print Station (remote/phone printing)
+
+Since a phone can't push a print job to a specific office computer on its
+own, printing works through a queue instead:
+
+1. On the office computer that's connected to the printer, open
+   `print-station.html` (same URL pattern as the main app, e.g.
+   `https://itshbn-web.github.io/Bad-Stock-Log/print-station.html`) and
+   **leave that tab open**.
+2. Click **Enable Desktop Notifications** once and allow it — this lets the
+   tab pop a system notification when a new print request comes in, even if
+   the tab is in the background.
+3. When someone (on their phone or anywhere else) opens a completed
+   transaction in IT Entry and taps **Print**, a request lands in a new
+   `PrintQueue` sheet tab and shows up on the Print Station within a few
+   seconds.
+4. From the Print Station, click **Print** to open the same print layout
+   and send it to whatever printer is set up on that computer, or
+   **Cancel** to reject the request without printing. Either way, the
+   person who tapped Print sees a confirmation.
+
+**Limitations to know about:**
+- This is polling (checks every 5 seconds), not instant push — there's a
+  short delay, not a live interrupt.
+- The Print Station tab must stay open on that computer. If it's closed or
+  the computer is asleep, requests just sit pending until it's reopened.
+- Browsers can't reliably tell the difference between "printed" and
+  "cancelled from the native print dialog" — once you click Print and the
+  dialog closes, the request is marked Printed either way. Use the
+  **Cancel** button in the queue list itself if you want to reject a
+  request before it ever reaches that dialog.
+- `print-station.js` needs the same `WEB_APP_URL` you set in `app.js` —
+  update both if you ever redeploy the Apps Script.
 
 ## Notes / assumptions I made
 
