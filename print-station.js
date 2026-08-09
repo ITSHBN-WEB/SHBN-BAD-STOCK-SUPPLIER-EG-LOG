@@ -220,9 +220,7 @@ document.getElementById('queueList').addEventListener('click', async function (e
 
 async function handlePrint(item, source) {
   if (item.sourceId === 'fresh_market') {
-    const data = await apiGet(source.webAppUrl, 'getBatchPrintData', {
-      sheetName: item.sheetName, batchTimestampMs: item.batchTimestampMs
-    });
+    const data = await apiGet(source.webAppUrl, 'getBatchPrintData', { txnId: item.txnId });
     renderPrintAreaFreshMarket(data);
   } else {
     const data = await apiGet(source.webAppUrl, 'getTransaction', { txnId: item.txnId });
