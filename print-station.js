@@ -291,37 +291,57 @@ function renderPrintAreaSupplierEg(t) {
 }
 
 // ---- Bad Stock Fresh Market print layout ----
-// Reuses the same print-header/print-body/print-table/print-sign/print-itonly/
-// print-fields classes as Supplier/EG (from style.css) so both apps look
-// consistent coming out of the same Print Station, just with Fresh Market's
-// own fields (separate Staff/Supervisor, PLU-based items, no Reason column).
+// This mirrors Fresh Market's OWN local print template (openPrintView() in
+// that app's Index.html) instead of Supplier/EG's print-header/print-table
+// layout — the two apps have visually distinct printed slips, so each gets
+// its own render function here. Classes below are prefixed "fm-" and defined
+// via an injected <style> block scoped to ".fm-print" so they can never
+// collide with Supplier/EG's print-* classes from style.css, since both
+// templates take turns using the same #printArea element depending on which
+// request is being printed.
 function renderPrintAreaFreshMarket(p) {
   const rows = p.items.map(function (it) {
-    return '<tr><td>' + escapeHtml(it.plu) + '</td><td>' + escapeHtml(it.description || '') + '</td><td>' + escapeHtml(String(it.qty)) + '</td></tr>';
+    return '<tr><td>' + escapeHtml(it.plu) + '</td><td>' + escapeHtml(it.description || '') + '</td><td>' + escapeHtml(String(it.qty)) + '</td><td>' + escapeHtml(it.uom || '') + '</td></tr>';
   }).join('');
 
-  const blank = '__________________';
-
   document.getElementById('printArea').innerHTML =
-    '<div class="print-header">' +
-    '<div class="print-title">SHBN - BAD STOCK LOG</div>' +
-    '<div class="print-outlet">BAD STOCK REPORT</div>' +
-    '<div class="print-meta">' +
-    '<span><strong>Date:</strong> ' + escapeHtml(p.date) + ', ' + escapeHtml(p.time) + '</span>' +
-    '<span><strong>Category:</strong> ' + escapeHtml(p.category) + '</span>' +
-    '<span><strong>Staff:</strong> ' + escapeHtml(p.staff) + '</span>' +
-    '<span><strong>Supervisor:</strong> ' + escapeHtml(p.supervisor) + '</span>' +
+    '<style>' +
+    '.fm-print{font-family:Georgia, "Times New Roman", serif;color:#222;}' +
+    '.fm-print .fm-title{text-align:center;font-size:20px;font-weight:700;letter-spacing:0.5px;margin-bottom:2px;}' +
+    '.fm-print .fm-subtitle{text-align:center;font-size:12px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;}' +
+    '.fm-print .fm-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;font-size:13px;margin-bottom:14px;border-top:1px solid #999;border-bottom:1px solid #999;padding:10px 0;}' +
+    '.fm-print .fm-meta div span{color:#666;}' +
+    '.fm-print .fm-meta div b{display:block;font-size:14px;}' +
+    '.fm-print table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:30px;}' +
+    '.fm-print thead{display:table-header-group;}' + /* explicit: repeat this on every printed page */
+    '.fm-print tr{page-break-inside:avoid;}' +
+    '.fm-print th,.fm-print td{border:1px solid #999;padding:8px 10px;text-align:left;}' +
+    '.fm-print th.fm-col-head{background:#eee;text-transform:uppercase;font-size:11px;letter-spacing:0.3px;}' +
+    '.fm-print .fm-sign-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:50px;page-break-inside:avoid;}' +
+    '.fm-print .fm-sign-box{font-size:12px;}' +
+    '.fm-print .fm-sign-line{border-top:1px solid #333;margin-top:40px;padding-top:6px;}' +
+    '.fm-print .fm-sign-label{font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:0.4px;color:#444;}' +
+    '</style>' +
+    '<div class="fm-print">' +
+    '<div class="fm-title">SHBN &mdash; Bad Stock Log</div>' +
+    '<div class="fm-subtitle">Bad Stock Report</div>' +
+    '<div class="fm-meta">' +
+    '<div><span>Date</span><b>' + escapeHtml(p.date) + (p.time ? ', ' + escapeHtml(p.time) : '') + '</b></div>' +
+    '<div><span>Bad Stock Category</span><b>' + escapeHtml(p.category) + '</b></div>' +
+    '<div><span>Staff</span><b>' + escapeHtml(p.staff) + '</b></div>' +
+    '<div><span>Supervisor</span><b>' + escapeHtml(p.supervisor) + '</b></div>' +
+    '<div><span>Material Document</span><b>' + (p.materialDocument ? escapeHtml(p.materialDocument) : '') + '</b></div>' +
+    '<div><span>Key In By</span><b>' + (p.keyInBy ? escapeHtml(p.keyInBy) : '') + '</b></div>' +
     '</div>' +
-    '</div>' +
-    '<div class="print-body">' +
-    '<table class="print-table"><thead><tr><th>PLU / Product Code</th><th>Description</th><th>Qty</th></tr></thead>' +
-    '<tbody>' + rows + '</tbody></table>' +
-    '<div class="print-sign"><span>Staff / Supervisor</span><span>Manager</span></div>' +
-    '<div class="print-itonly">FOR IT USE ONLY</div>' +
-    '<div class="print-fields">' +
-    '<div><span class="pf-label">Material document</span><span>: ' + (p.materialDocument ? escapeHtml(p.materialDocument) : blank) + '</span></div>' +
-    '<div><span class="pf-label">Key in by</span><span>: ' + (p.keyInBy ? escapeHtml(p.keyInBy) : blank) + '</span></div>' +
-    '<div><span class="pf-label">Date</span><span>: ' + (p.keyInDate ? escapeHtml(p.keyInDate) : blank) + '</span></div>' +
+    '<table>' +
+    '<thead><tr><th class="fm-col-head">PLU / Product Code</th><th class="fm-col-head">Description</th><th class="fm-col-head">Quantity</th><th class="fm-col-head">UOM</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody>' +
+    '</table>' +
+    '<div class="fm-sign-grid">' +
+    '<div class="fm-sign-box"><div class="fm-sign-line"></div><div class="fm-sign-label">Staff</div>' + escapeHtml(p.staff) + '</div>' +
+    '<div class="fm-sign-box"><div class="fm-sign-line"></div><div class="fm-sign-label">Supervisor</div>' + escapeHtml(p.supervisor) + '</div>' +
+    '<div class="fm-sign-box"><div class="fm-sign-line"></div><div class="fm-sign-label">Manager</div>&nbsp;</div>' +
+    '<div class="fm-sign-box"><div class="fm-sign-line"></div><div class="fm-sign-label">Key In By</div>' + (p.keyInBy ? escapeHtml(p.keyInBy) : '') + '</div>' +
     '</div>' +
     '</div>';
 }
