@@ -66,6 +66,17 @@ function sourceById(id) {
   return PRINT_SOURCES.find(function (s) { return s.id === id; });
 }
 
+// Not in style.css, so injected here once — blinking red warning line shown
+// on a queue card when its batch still has item(s) not in the Masterlist.
+(function injectUnmatchedWarningStyle() {
+  var style = document.createElement('style');
+  style.textContent =
+    '.ps-unmatched-warn{display:block;font-size:12px;font-weight:700;font-style:italic;color:#ef4444;margin-top:4px;animation:ps-unmatched-blink 1.1s ease-in-out infinite;}' +
+    '@keyframes ps-unmatched-blink{0%,100%{opacity:1;}50%{opacity:0.25;}}' +
+    '.btn-print:disabled{opacity:0.45;cursor:not-allowed;}';
+  document.head.appendChild(style);
+})();
+
 /* ---------------------------------------------------------------------- */
 /* Notifications                                                           */
 /* ---------------------------------------------------------------------- */
@@ -164,6 +175,7 @@ function renderQueue(items) {
   }
   items.forEach(function (item) {
     const source = sourceById(item.sourceId);
+    const unmatchedCount = (item.context && item.context.unmatchedCount) || 0;
     const card = document.createElement('div');
     card.className = 'card ps-item';
     card.innerHTML =
@@ -171,10 +183,13 @@ function renderQueue(items) {
       '<span class="ps-app">' + escapeHtml(source ? source.label : item.sourceId) + '</span>' +
       '<span class="ps-meta">' + escapeHtml(contextLabel(item)) + '</span>' +
       '<span class="ps-meta">Requested ' + escapeHtml(item.requestedAt) + '</span>' +
+      (unmatchedCount > 0
+        ? '<span class="ps-unmatched-warn">! ' + unmatchedCount + ' item(s) is not in masterlist. Please check.</span>'
+        : '') +
       '</div>' +
       '<div class="ps-actions">' +
       '<button class="btn btn-secondary btn-cancel" data-key="' + item.key + '">Cancel</button>' +
-      '<button class="btn btn-primary btn-print" data-key="' + item.key + '">Print</button>' +
+      '<button class="btn btn-primary btn-print" data-key="' + item.key + '"' + (unmatchedCount > 0 ? ' disabled title="Some data is not in the masterlist. Please check."' : '') + '>Print</button>' +
       '</div>';
     container.appendChild(card);
     card.dataset.item = JSON.stringify(item);
@@ -221,6 +236,15 @@ document.getElementById('queueList').addEventListener('click', async function (e
 async function handlePrint(item, source) {
   if (item.sourceId === 'fresh_market') {
     const data = await apiGet(source.webAppUrl, 'getBatchPrintData', { txnId: item.txnId });
+    // Re-check against the freshest data available, in case the queue list
+    // is up to a poll interval stale (or the button was clicked before it
+    // re-rendered as disabled) — the disabled state above is a UX hint, not
+    // the real gate.
+    const stillUnmatched = data.items.some(function (it) { return !it.description; });
+    if (stillUnmatched) {
+      alert('Some data is not in the masterlist. Please check.');
+      return;
+    }
     renderPrintAreaFreshMarket(data);
   } else {
     const data = await apiGet(source.webAppUrl, 'getTransaction', { txnId: item.txnId });
@@ -349,6 +373,19 @@ function renderPrintAreaFreshMarket(p) {
 /* ---------------------------------------------------------------------- */
 /* Boot                                                                     */
 /* ---------------------------------------------------------------------- */
+
+// Manual refresh — lets staff immediately re-check the queue (picking up,
+// e.g., an admin having just added a previously-missing PLU to the
+// Masterlist) instead of waiting up to POLL_INTERVAL_MS for the next
+// automatic poll. Guarded in case index.html hasn't been updated with the
+// button yet, so this file doesn't error out on load.
+var btnRefreshQueue = document.getElementById('btnRefreshQueue');
+if (btnRefreshQueue) {
+  btnRefreshQueue.addEventListener('click', function () {
+    btnRefreshQueue.disabled = true;
+    pollQueue().finally(function () { btnRefreshQueue.disabled = false; });
+  });
+}
 
 pollQueue();
 setInterval(pollQueue, POLL_INTERVAL_MS);
