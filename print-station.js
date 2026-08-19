@@ -25,7 +25,14 @@ const PRINT_SOURCES = [
   }
 ];
 
-const POLL_INTERVAL_MS = 5000;
+// Was 5000ms — polling both apps' getPrintQueue() every 5 seconds, each of
+// which scans every month-tab looking for matching rows, adds up fast over
+// a full day and can exhaust Apps Script's daily execution quota (especially
+// on a free/personal Gmail account), which then breaks EVERYTHING using
+// that script project — not just the Print Station. Widened to 20s as a
+// much lighter load; a 15-20s delay before a new print request is noticed
+// is an acceptable tradeoff against the whole app going down.
+const POLL_INTERVAL_MS = 20000;
 
 let knownRequestKeys = null; // null until first poll completes, so we don't notify for items already pending on load
 let pendingPrint = null; // { requestId, sourceId } — request currently in the native print dialog
