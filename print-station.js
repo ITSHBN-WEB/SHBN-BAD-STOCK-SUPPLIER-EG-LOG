@@ -21,7 +21,7 @@ const PRINT_SOURCES = [
   {
     id: 'fresh_market',
     label: 'Bad Stock Fresh Market',
-    webAppUrl: 'https://script.google.com/macros/s/AKfycbwLq9JQ9SehAMoNjyhIOB-E4Gzl_s0oXbVzD5TXMN3w1AOgJHQJOadmNS6fy6cbDEVT/exec' // same URL as Fresh Market's index.html
+    webAppUrl: 'https://script.google.com/macros/s/AKfycbwg2_9PLumzPLimQEV7-Ym-UvEXPhlyvqGLzzl8T24WLUnDWHw-j3OPrBkOphJGm52l/exec' // same URL as Fresh Market's index.html
   }
 ];
 
