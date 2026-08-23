@@ -13,6 +13,16 @@
   font-size:16px;
 }
 *{box-sizing:border-box;}
+
+/* Any element with the native `hidden` attribute must stay hidden, full
+   stop, even if another rule elsewhere in this file (or a future one)
+   sets display on the same element/class. This is what actually broke the
+   IT Entry Pending/Completed toggle: .it-list{display:flex} was beating
+   the browser's built-in [hidden]{display:none} rule since author rules
+   always win over the default stylesheet. Keep this near the top so it's
+   easy to find, and never remove it. */
+[hidden]{display:none !important;}
+
 body{
   margin:0;
   background:var(--cream);
@@ -160,9 +170,6 @@ main{max-width:720px;margin:0 auto;padding:20px;padding-bottom:64px;}
 .modal-overlay{
   position:fixed;inset:0;background:rgba(43,36,32,.5);
   display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;
-}
-.modal-overlay[hidden]{
-  display:none;
 }
 .modal{background:#fff;border-radius:12px;padding:24px;max-width:340px;width:100%;}
 .modal p{margin:0 0 18px;font-size:15px;}
