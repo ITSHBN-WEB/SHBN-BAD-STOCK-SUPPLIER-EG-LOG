@@ -188,15 +188,24 @@ main{max-width:720px;margin:0 auto;padding:20px;padding-bottom:64px;}
 #printArea{display:none;}
 @media print{
   @page{ margin: 20mm 14mm; }
-  body *{visibility:hidden;}
-  #printArea, #printArea *{visibility:visible;}
-  #printArea{display:block;position:absolute;top:0;left:0;width:100%;padding:0;}
+
+  /* Hide the live app with display:none (removes it from layout entirely)
+     rather than visibility:hidden (which only hides paint, not layout).
+     visibility:hidden was leaving the full height of whatever view sat
+     behind the print panel — e.g. a long Pending list in IT Entry — still
+     occupying space in the document flow. #printArea itself is absolutely
+     positioned and floats out of that flow onto page 1, so that leftover
+     invisible height was spilling onto extra pages of its own, blank
+     except for the fixed header repeating on top of them. */
+  .topbar, #app, .modal-overlay, .toast{display:none !important;}
+  #printArea{display:block;}
 
   /* Repeats at the top of every printed page. */
   .print-header{
     position:fixed;top:0;left:0;right:0;
     padding:0 0 10px;background:#fff;border-bottom:1px solid #ccc;
   }
+  .print-txnid{position:absolute;top:0;right:0;font-size:11px;font-weight:700;color:#555;letter-spacing:.03em;}
   .print-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:2px;}
   .print-outlet{text-align:center;font-size:12px;color:#555;margin-bottom:14px;}
   .print-meta{display:flex;justify-content:space-between;font-size:13px;}
