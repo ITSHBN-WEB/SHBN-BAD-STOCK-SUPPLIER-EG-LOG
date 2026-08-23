@@ -453,6 +453,7 @@ document.getElementById('btnPrintHere').addEventListener('click', function () {
   if (!activeTxn) return;
   const first = activeTxn.entries[0];
   renderPrintArea({
+    txnId: activeTxn.txnId,
     staffSupervisor: first.staffSupervisor,
     badStockCategory: first.badStockCategory,
     date: first.date,
@@ -476,6 +477,7 @@ function renderPrintArea(t) {
 
   document.getElementById('printArea').innerHTML =
     '<div class="print-header">' +
+    '<div class="print-txnid">TXN ' + escapeHtml(t.txnId || '') + '</div>' +
     '<div class="print-title">SHBN - BAD STOCK SUPPLIER/EG LOG</div>' +
     '<div class="print-outlet">OUTLET: ' + OUTLET_NAME + '</div>' +
     '<div class="print-meta">' +
